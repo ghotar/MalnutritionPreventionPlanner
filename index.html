@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Village Famine Prevention Planner</title>
+  <style>
+    :root {
+      --bg: #08111d;
+      --panel: #0f172a;
+      --panel2: #111827;
+      --line: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #60a5fa;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --violet: #a78bfa;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #020617, #0b1220 30%, #0f172a 100%);
+      color: var(--text);
+    }
+    .wrap { max-width: 1440px; margin: 0 auto; padding: 18px; }
+    .hero, .card {
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+    }
+    .hero { padding: 18px 20px; margin-bottom: 16px; }
+    .card { padding: 16px; }
+    h1, h2, h3 { margin: 0 0 8px; }
+    h1 { font-size: 30px; }
+    h2 { font-size: 18px; }
+    p { margin: 0 0 10px; color: var(--muted); line-height: 1.5; }
+    .small { font-size: 12px; color: var(--muted); }
+    .section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #93c5fd;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .left-col, .right-col { display: grid; gap: 16px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .span-2 { grid-column: span 2; }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: #111827;
+      color: var(--text);
+      border: 1px solid #475569;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    textarea { resize: vertical; min-height: 70px; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 16px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .primary { background: var(--accent); color: #07111f; }
+    .secondary { background: #334155; color: var(--text); }
+    .ghost { background: transparent; color: var(--text); border: 1px solid #475569; }
+    .pill-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .pill {
+      background: #0b1220;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .pill .k { font-size: 12px; color: var(--muted); }
+    .pill .v { font-size: 26px; font-weight: 800; margin-top: 5px; }
+    .good { color: var(--good); }
+    .warn { color: var(--warn); }
+    .bad { color: var(--bad); }
+    .violet { color: var(--violet); }
+    .risk-bar {
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #0b1220;
+      border: 1px solid var(--line);
+      margin: 10px 0 8px;
+    }
+    .risk-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--good), var(--warn), var(--bad));
+      transition: width 0.25s ease;
+    }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #111827;
+      border: 1px solid #475569;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    ul { margin: 8px 0 0 18px; }
+    li { margin: 6px 0; line-height: 1.45; }
+    canvas {
+      width: 100%;
+      background: #07101c;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #233046;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: #cbd5e1; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .slider-row { display: grid; grid-template-columns: 1fr 80px; gap: 10px; align-items: center; }
+    .mono { font-family: "Courier New", Courier, monospace; }
+    .timeline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .timeline input[type="range"] { flex: 1; }
+    .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--muted); }
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .l-pop::before { background: #60a5fa; }
+    .l-risk::before { background: #ef4444; }
+    .l-u5::before { background: #f59e0b; }
+    .l-food::before { background: #22c55e; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .pill-grid, .two-col, .form-grid { grid-template-columns: 1fr; }
+      .span-2 { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Village Famine Prevention Planner</h1>
+      <p>
+        District-officer dashboard for forward planning in remote villages across Bihar, Chhattisgarh,
+        Madhya Pradesh, and West Bengal. The model simulates households, village ecology, shocks,
+        entitlement failures, nutrition, and intervention effects. It runs weekly internally and summarizes yearly.
+      </p>
+      <div class="small">
+        Version 1 uses a transparent rule-based agent simulation with Monte Carlo runs and confidence bands.
+        The purpose is planning usefulness, not black-box prediction.
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="left-col">
+        <div class="card">
+          <div class="section-label">Scenario Setup</div>
+          <div class="form-grid">
+            <div>
+              <label for="state">State pack</label>
+              <select id="state">
+                <option value="Bihar">Bihar</option>
+                <option value="Chhattisgarh">Chhattisgarh</option>
+                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                <option value="West Bengal">West Bengal</option>
+              </select>
+            </div>
+            <div>
+              <label for="horizon">Horizon</label>
+              <select id="horizon">
+                <option value="1">1 year</option>
+                <option value="5">5 years</option>
+                <option value="10">10 years</option>
+                <option value="15">15 years</option>
+                <option value="20" selected>20 years</option>
+              </select>
+            </div>
+            <div>
+              <label for="population">Seed population</label>
+              <input id="population" type="number" min="100" max="3000" value="1200" />
+            </div>
+            <div>
+              <label for="remoteness">Remoteness (0-1)</label>
+              <input id="remoteness" type="number" min="0" max="1" step="0.05" value="0.65" />
+            </div>
+            <div>
+              <label for="monsoonFailure">Monsoon failure probability/year</label>
+              <input id="monsoonFailure" type="number" min="0" max="1" step="0.01" value="0.18" />
+            </div>
+            <div>
+              <label for="floodRisk">Flood probability/year</label>
+              <input id="floodRisk" type="number" min="0" max="1" step="0.01" value="0.08" />
+            </div>
+            <div>
+              <label for="fertilizerSpike">Fertilizer price spike probability/year</label>
+              <input id="fertilizerSpike" type="number" min="0" max="1" step="0.01" value="0.12" />
+            </div>
+            <div>
+              <label for="fuelSpike">Fuel price spike probability/year</label>
+              <input id="fuelSpike" type="number" min="0" max="1" step="0.01" value="0.14" />
+            </div>
+            <div>
+              <label for="mcRuns">Monte Carlo runs</label>
+              <select id="mcRuns">
+                <option value="25">Quick (25)</option>
+                <option value="100" selected>Standard (100)</option>
+                <option value="250">Deep (250)</option>
+              </select>
+            </div>
+            <div>
+              <label for="seed">Random seed</label>
+              <input id="seed" type="number" min="1" max="999999" value="42" />
+            </div>
+            <div class="span-2">
+              <label for="notes">Officer notes</label>
+              <textarea id="notes" placeholder="Optional scenario notes for the village, district, or block."></textarea>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="primary" id="runBtn">Run simulation</button>
+            <button class="secondary" id="sampleBtn">Load state defaults</button>
+            <button class="ghost" id="exportBtn">Export memo text</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-label">Intervention Levers</div>
+          <div class="form-grid">
+            <div><label for="bufferStock">Buffer stock strength</label><div class="slider-row"><input id="bufferStock" type="range" min="0" max="100" value="70" /><span id="bufferStockVal">70</span></div></div>
+            <div><label for="schoolMeals">School meals coverage</label><div class="slider-row"><input id="schoolMeals" type="range" min="0" max="100" value="80" /><span id="schoolMealsVal">80</span></div></div>
+            <div><label for="cashTransfers">Cash transfer intensity</label><div class="slider-row"><input id="cashTransfers" type="range" min="0" max="100" value="65" /><span id="cashTransfersVal">65</span></div></div>
+            <div><label for="irrigationRepair">Irrigation / repair capacity</label><div class="slider-row"><input id="irrigationRepair" type="range" min="0" max="100" value="60" /><span id="irrigationRepairVal">60</span></div></div>
+            <div><label for="tubewells">Tubewell / water expansion</label><div class="slider-row"><input id="tubewells" type="range" min="0" max="100" value="55" /><span id="tubewellsVal">55</span></div></div>
+            <div><label for="maternalNutrition">Maternal nutrition support</label><div class="slider-row"><input id="maternalNutrition" type="range" min="0" max="100" value="75" /><span id="maternalNutritionVal">75</span></div></div>
+            <div><label for="migrationSupport">Migration support</label><div class="slider-row"><input id="migrationSupport" type="range" min="0" max="100" value="40" /><span id="migrationSupportVal">40</span></div></div>
+            <div><label for="riskTargeting">Household risk identification</label><div class="slider-row"><input id="riskTargeting" type="range" min="0" max="100" value="78" /><span id="riskTargetingVal">78</span></div></div>
+            <div><label for="solarSupport">Solar / tech introduction</label><div class="slider-row"><input id="solarSupport" type="range" min="0" max="100" value="50" /><span id="solarSupportVal">50</span></div></div>
+            <div><label for="fertSubstitute">Fertilizer substitutes</label><div class="slider-row"><input id="fertSubstitute" type="range" min="0" max="100" value="45" /><span id="fertSubstituteVal">45</span></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-label">Model Structure</div>
+          <div class="tags">
+            <span class="tag">weekly internal simulation</span>
+            <span class="tag">yearly summary</span>
+            <span class="tag">state packs</span>
+            <span class="tag">households + farms</span>
+            <span class="tag">entitlements</span>
+            <span class="tag">maternal care</span>
+            <span class="tag">cooperation</span>
+            <span class="tag">Monte Carlo bands</span>
+          </div>
+          <ul>
+            <li>Human agents are tracked conceptually in exact weeks from birth and grouped inside multigenerational households.</li>
+            <li>Pregnancy uses weekly conception hazard by female age. Under-5 and maternal nutrition states modify outcomes.</li>
+            <li>Households share labor, food, debt, entitlement access, and kin support.</li>
+            <li>Village resilience depends on farm output, bovines, commons ecology, prices, and social cohesion.</li>
+            <li>The officer can deploy strong interventions early, especially long-range water, food, and maternal measures.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="card">
+          <div class="section-label">Summary Dashboard</div>
+          <div class="pill-grid">
+            <div class="pill"><div class="k">Projected risk</div><div class="v bad" id="riskScore">--</div></div>
+            <div class="pill"><div class="k">Village status</div><div class="v" id="statusLabel">--</div></div>
+            <div class="pill"><div class="k">Under-5 malnutrition</div><div class="v warn" id="u5Label">--</div></div>
+            <div class="pill"><div class="k">Food buffer</div><div class="v good" id="foodLabel">--</div></div>
+            <div class="pill"><div class="k">Priority horizon</div><div class="v violet" id="priorityHorizon">--</div></div>
+          </div>
+          <div class="risk-bar"><div id="riskFill" class="risk-fill"></div></div>
+          <div class="small" id="riskNarrative">Run a scenario to see village-level risk, confidence bands, and recommended actions.</div>
+        </div>
+
+        <div class="card">
+          <div class="section-label">Forecast and Confidence Bands</div>
+          <canvas id="trendCanvas" width="900" height="320"></canvas>
+          <div class="legend">
+            <span class="l-pop">population</span>
+            <span class="l-risk">famine risk</span>
+            <span class="l-u5">under-5 burden</span>
+            <span class="l-food">food buffer</span>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="section-label">Population Pyramid and Playback</div>
+            <canvas id="pyramidCanvas" width="520" height="320"></canvas>
+            <div class="timeline" style="margin-top: 12px;">
+              <button class="secondary" id="playBtn">Play</button>
+              <input id="yearSlider" type="range" min="0" max="0" value="0" />
+              <span class="mono" id="yearLabel">Year 0</span>
+            </div>
+            <div class="small" id="playbackMeta">Animation-ready structure for yearly snapshots.</div>
+          </div>
+
+          <div class="card">
+            <div class="section-label">Officer Planning Memo</div>
+            <div id="memoBox" class="small" style="white-space: pre-wrap; line-height: 1.55; color: var(--text);">
+              Run the simulation to generate a village-specific planning memo.
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="section-label">Likely Drivers</div>
+            <table id="driversTable">
+              <thead><tr><th>Driver</th><th>Contribution</th><th>Interpretation</th></tr></thead>
+              <tbody><tr><td colspan="3" class="small">No simulation yet.</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="section-label">Recommended Interventions</div>
+            <table id="interventionsTable">
+              <thead><tr><th>Intervention</th><th>Expected effect</th><th>Reason</th></tr></thead>
+              <tbody><tr><td colspan="3" class="small">No simulation yet.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-label">Yearly Summary Table</div>
+          <table id="summaryTable">
+            <thead>
+              <tr>
+                <th>Year</th><th>Population</th><th>Risk</th><th>Under-5 burden</th><th>Food buffer</th><th>Maternal burden</th><th>Entitlement stress</th><th>Shock note</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="8" class="small">No simulation yet.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const statePacks = {
+      Bihar: { fertilityPeak: 0.00165, infantMortality: 0.00045, u5Vulnerability: 1.15, baseCohesion: 0.68, irrigationBase: 0.42, marketAccess: 0.50, floodSensitivity: 0.95, monsoonSensitivity: 1.10, priceSensitivity: 1.06, bovineBase: 0.58 },
+      Chhattisgarh: { fertilityPeak: 0.00145, infantMortality: 0.00042, u5Vulnerability: 1.08, baseCohesion: 0.72, irrigationBase: 0.38, marketAccess: 0.40, floodSensitivity: 0.72, monsoonSensitivity: 1.06, priceSensitivity: 0.96, bovineBase: 0.55 },
+      "Madhya Pradesh": { fertilityPeak: 0.00150, infantMortality: 0.00040, u5Vulnerability: 1.00, baseCohesion: 0.65, irrigationBase: 0.48, marketAccess: 0.52, floodSensitivity: 0.62, monsoonSensitivity: 1.02, priceSensitivity: 1.00, bovineBase: 0.60 },
+      "West Bengal": { fertilityPeak: 0.00120, infantMortality: 0.00032, u5Vulnerability: 0.90, baseCohesion: 0.70, irrigationBase: 0.60, marketAccess: 0.66, floodSensitivity: 1.05, monsoonSensitivity: 0.92, priceSensitivity: 0.98, bovineBase: 0.46 },
+    };
+
+    const ageBins = ["0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+"];
+    const defaultPyramid = [0.11,0.10,0.10,0.09,0.09,0.08,0.08,0.07,0.06,0.05,0.05,0.04,0.03,0.02,0.015,0.01,0.005];
+    const ui = {};
+    let latestResult = null;
+    let playbackTimer = null;
+
+    function q(id) { return document.getElementById(id); }
+    function mean(arr) { return arr.reduce((a,b)=>a+b,0) / Math.max(arr.length, 1); }
+    function mode(arr) { const m = new Map(); arr.forEach(v => m.set(v, (m.get(v)||0)+1)); return [...m.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0] || "stable"; }
+
+    function initUI() {
+      ["bufferStock","schoolMeals","cashTransfers","irrigationRepair","tubewells","maternalNutrition","migrationSupport","riskTargeting","solarSupport","fertSubstitute"].forEach(id => {
+        ui[id] = q(id); ui[id + "Val"] = q(id + "Val");
+        ui[id].addEventListener("input", () => ui[id + "Val"].textContent = ui[id].value);
+      });
+      ["state","horizon","population","remoteness","monsoonFailure","floodRisk","fertilizerSpike","fuelSpike","mcRuns","seed","notes"].forEach(id => ui[id] = q(id));
+      ["runBtn","sampleBtn","exportBtn","riskScore","statusLabel","u5Label","foodLabel","priorityHorizon","riskFill","riskNarrative","memoBox","trendCanvas","pyramidCanvas","yearSlider","yearLabel","playBtn","playbackMeta"].forEach(id => ui[id] = q(id));
+      ui.driversTable = q("driversTable").querySelector("tbody");
+      ui.interventionsTable = q("interventionsTable").querySelector("tbody");
+      ui.summaryTable = q("summaryTable").querySelector("tbody");
+      ui.runBtn.addEventListener("click", runSimulation);
+      ui.sampleBtn.addEventListener("click", applyStateDefaults);
+      ui.exportBtn.addEventListener("click", exportMemo);
+      ui.playBtn.addEventListener("click", togglePlayback);
+      ui.yearSlider.addEventListener("input", onYearChange);
+      applyStateDefaults();
+    }
+
+    function applyStateDefaults() {
+      const pack = statePacks[ui.state.value];
+      const presets = {
+        Bihar: { remoteness: 0.70, monsoonFailure: 0.20, floodRisk: 0.10, fertilizerSpike: 0.12, fuelSpike: 0.14 },
+        Chhattisgarh: { remoteness: 0.78, monsoonFailure: 0.17, floodRisk: 0.06, fertilizerSpike: 0.10, fuelSpike: 0.13 },
+        "Madhya Pradesh": { remoteness: 0.58, monsoonFailure: 0.15, floodRisk: 0.05, fertilizerSpike: 0.11, fuelSpike: 0.12 },
+        "West Bengal": { remoteness: 0.42, monsoonFailure: 0.13, floodRisk: 0.13, fertilizerSpike: 0.10, fuelSpike: 0.11 },
+      }[ui.state.value];
+      ui.remoteness.value = presets.remoteness; ui.monsoonFailure.value = presets.monsoonFailure; ui.floodRisk.value = presets.floodRisk; ui.fertilizerSpike.value = presets.fertilizerSpike; ui.fuelSpike.value = presets.fuelSpike;
+      ui.riskNarrative.textContent = `Loaded ${ui.state.value} defaults. Base cohesion ${(pack.baseCohesion * 100).toFixed(0)}%, irrigation ${(pack.irrigationBase * 100).toFixed(0)}%, market access ${(pack.marketAccess * 100).toFixed(0)}%.`;
+    }
+
+    function mulberry32(seed) {
+      let t = seed >>> 0;
+      return function() {
+        t += 0x6D2B79F5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function readScenario() {
+      return {
+        state: ui.state.value,
+        years: Number(ui.horizon.value),
+        population: Number(ui.population.value),
+        remoteness: Number(ui.remoteness.value),
+        monsoonFailure: Number(ui.monsoonFailure.value),
+        floodRisk: Number(ui.floodRisk.value),
+        fertilizerSpike: Number(ui.fertilizerSpike.value),
+        fuelSpike: Number(ui.fuelSpike.value),
+        mcRuns: Number(ui.mcRuns.value),
+        seed: Number(ui.seed.value),
+        notes: ui.notes.value.trim(),
+        interventions: {
+          bufferStock: Number(ui.bufferStock.value) / 100,
+          schoolMeals: Number(ui.schoolMeals.value) / 100,
+          cashTransfers: Number(ui.cashTransfers.value) / 100,
+          irrigationRepair: Number(ui.irrigationRepair.value) / 100,
+          tubewells: Number(ui.tubewells.value) / 100,
+          maternalNutrition: Number(ui.maternalNutrition.value) / 100,
+          migrationSupport: Number(ui.migrationSupport.value) / 100,
+          riskTargeting: Number(ui.riskTargeting.value) / 100,
+          solarSupport: Number(ui.solarSupport.value) / 100,
+          fertSubstitute: Number(ui.fertSubstitute.value) / 100,
+        }
+      };
+    }
+
+    function weeklyConceptionHazard(ageWeeks, fertilityPeak) {
+      const ageYears = ageWeeks / 52;
+      if (ageYears < 15 || ageYears > 45) return 0;
+      const peakAge = 24;
+      const dist = Math.abs(ageYears - peakAge);
+      const shape = Math.max(0.15, 1 - dist / 18);
+      return fertilityPeak * shape;
+    }
+
+    function buildVillageState(scenario, rng) {
+      const pack = statePacks[scenario.state];
+      const households = [];
+      const avgHH = 5.2;
+      const householdCount = Math.max(20, Math.round(scenario.population / avgHH));
+      for (let i = 0; i < householdCount; i++) {
+        const clsRoll = rng();
+        let hhClass = "landless_labour";
+        if (clsRoll > 0.82) hhClass = "trader_artisan";
+        else if (clsRoll > 0.62) hhClass = "small_farmer";
+        else if (clsRoll > 0.38) hhClass = "marginal_farmer";
+        else if (clsRoll > 0.18) hhClass = "tenant_sharecropper";
+        const size = Math.max(2, Math.round(3 + rng() * 6));
+        const adults = Math.max(1, Math.round(size * (0.45 + rng() * 0.20)));
+        const children = Math.max(0, size - adults);
+        const land = hhClass === "small_farmer" ? 2.2 + rng() * 2.0 : hhClass === "marginal_farmer" ? 0.5 + rng() * 1.0 : hhClass === "tenant_sharecropper" ? 0.4 + rng() * 1.2 : hhClass === "trader_artisan" ? 0.2 + rng() * 0.5 : 0;
+        const bovines = hhClass === "small_farmer" ? Math.round(1 + rng() * 3) : hhClass === "marginal_farmer" ? Math.round(rng() * 2) : rng() < 0.18 ? 1 : 0;
+        households.push({ id: i + 1, hhClass, size, adults, children, under5: Math.max(0, Math.round(children * (0.35 + rng() * 0.20))), pregnantWomen: rng() < 0.28 ? 1 : 0, elderly: Math.round(size * (0.08 + rng() * 0.12)), laborUnits: adults * (0.75 + rng() * 0.4), foodStock: 5 + rng() * 18, debt: rng() * 10, assets: 4 + rng() * 14, land, bovines, entitlement: 0.45 + rng() * 0.30, kinSupport: pack.baseCohesion * (0.8 + rng() * 0.35), maternalCare: 0.48 + rng() * 0.30, cooperation: pack.baseCohesion * (0.85 + rng() * 0.30), childNutrition: 0.60 + rng() * 0.24, maternalNutrition: 0.62 + rng() * 0.20 });
+      }
+      return {
+        households,
+        ecology: { soil: 0.70, groundwater: 0.62, commons: 0.58, fodder: 0.64, fishWetland: scenario.state === "West Bengal" ? 0.56 : 0.34 },
+        market: { grainPrice: 1.0, fertilizerPrice: 1.0, fuelPrice: 1.0 },
+        cohesion: pack.baseCohesion,
+        irrigation: pack.irrigationBase,
+      };
+    }
+
+    function buildPopulationPyramid(population) {
+      const binsMale = [], binsFemale = [];
+      for (let i = 0; i < defaultPyramid.length; i++) {
+        const binPop = Math.round(population * defaultPyramid[i]);
+        const males = Math.round(binPop * (i < 4 ? 0.515 : 0.50));
+        binsMale.push(males); binsFemale.push(Math.max(0, binPop - males));
+      }
+      return { binsMale, binsFemale };
+    }
+
+    function simulateOneRun(scenario, runIndex) {
+      const rng = mulberry32(scenario.seed + runIndex * 9973);
+      const pack = statePacks[scenario.state];
+      const village = buildVillageState(scenario, rng);
+      const yearly = [];
+      const weeks = scenario.years * 52;
+      let totalPop = village.households.reduce((s, h) => s + h.size, 0);
+      let risk = 18 + scenario.remoteness * 24;
+      let foodBuffer = 0.72;
+      let u5Burden = 0.22 * pack.u5Vulnerability;
+      let maternalBurden = 0.18;
+      let entitlementStress = 0.26;
+      let shockNote = "stable";
+
+      for (let week = 0; week < weeks; week++) {
+        const yearIndex = Math.floor(week / 52);
+        const monsoonShock = rng() < scenario.monsoonFailure / 52;
+        const floodShock = rng() < scenario.floodRisk / 52;
+        const fertShock = rng() < scenario.fertilizerSpike / 52;
+        const fuelShock = rng() < scenario.fuelSpike / 52;
+        const seasonal = 0.5 + 0.5 * Math.sin((week % 52) / 52 * Math.PI * 2 - 0.8);
+        const pricePenalty = 0.12 * (village.market.grainPrice - 1) + 0.07 * (village.market.fuelPrice - 1);
+
+        if (monsoonShock) { village.ecology.soil -= 0.015 * pack.monsoonSensitivity; foodBuffer -= 0.025 * pack.monsoonSensitivity * (1 - scenario.interventions.irrigationRepair * 0.55); risk += 1.7 * pack.monsoonSensitivity; shockNote = "monsoon failure"; }
+        if (floodShock) { village.ecology.groundwater += 0.01; village.ecology.commons -= 0.02; u5Burden += 0.010 * pack.floodSensitivity; maternalBurden += 0.006; risk += 1.25 * pack.floodSensitivity * (1 - scenario.interventions.tubewells * 0.25); shockNote = shockNote === "stable" ? "flood" : shockNote + " + flood"; }
+        if (fertShock) { village.market.fertilizerPrice += 0.18; risk += 0.85 * (1 - scenario.interventions.fertSubstitute * 0.65); shockNote = shockNote === "stable" ? "fertilizer spike" : shockNote + " + fertilizer"; }
+        if (fuelShock) { village.market.fuelPrice += 0.14; village.market.grainPrice += 0.06; entitlementStress += 0.006; risk += 0.70 * (1 - scenario.interventions.solarSupport * 0.45); shockNote = shockNote === "stable" ? "fuel spike" : shockNote + " + fuel"; }
+
+        village.market.grainPrice = Math.max(0.82, Math.min(1.95, village.market.grainPrice * (0.997 + scenario.remoteness * 0.001) + 0.003 * seasonal + (monsoonShock ? 0.03 : 0)));
+        village.market.fertilizerPrice = Math.max(0.85, Math.min(2.3, village.market.fertilizerPrice * 0.998));
+        village.market.fuelPrice = Math.max(0.88, Math.min(2.0, village.market.fuelPrice * 0.998));
+
+        let villageChildNutrition = 0, villageMaternalNutrition = 0, totalHouseholdsAtRisk = 0;
+        for (const hh of village.households) {
+          const ownProduction = hh.land * (0.22 + 0.18 * seasonal) * (0.65 + village.ecology.soil * 0.5) * (0.75 + village.irrigation * 0.35) * (1 - 0.16 * (village.market.fertilizerPrice - 1) * (1 - scenario.interventions.fertSubstitute * 0.7));
+          const wageIncome = hh.laborUnits * (0.09 + 0.05 * (1 - scenario.remoteness)) * (1 - 0.18 * (village.market.grainPrice - 1));
+          const bovineSupport = hh.bovines * (0.012 + 0.010 * village.ecology.fodder);
+          const transferSupport = scenario.interventions.cashTransfers * 0.08 + scenario.interventions.schoolMeals * hh.under5 * 0.003;
+          const maternalSupport = scenario.interventions.maternalNutrition * (hh.pregnantWomen * 0.015 + hh.under5 * 0.004);
+          const kinBuffer = hh.kinSupport * hh.cooperation * 0.025;
+          const bufferStockSupport = scenario.interventions.bufferStock * 0.06;
+          const entitlement = ownProduction + wageIncome + bovineSupport + transferSupport + maternalSupport + kinBuffer + bufferStockSupport;
+          const need = hh.size * (0.08 + 0.03 * village.market.grainPrice + pricePenalty);
+          const gap = entitlement - need;
+          hh.foodStock = Math.max(0, Math.min(26, hh.foodStock + entitlement - need + hh.cooperation * 0.02));
+          hh.debt = Math.max(0, hh.debt + (gap < 0 ? Math.abs(gap) * 0.6 : -0.05));
+          hh.entitlement = Math.max(0.05, Math.min(1.5, entitlement / Math.max(need, 0.01)));
+          hh.maternalCare = Math.max(0.2, Math.min(1.2, hh.maternalCare + scenario.interventions.maternalNutrition * 0.005 + scenario.interventions.riskTargeting * 0.002 - (fuelShock ? 0.008 : 0) - (hh.debt > 8 ? 0.004 : 0)));
+          hh.childNutrition = Math.max(0.1, Math.min(1.2, hh.childNutrition + (hh.foodStock > 8 ? 0.004 : -0.006) + hh.maternalCare * 0.004 + scenario.interventions.schoolMeals * 0.003 - (floodShock ? 0.006 : 0)));
+          hh.maternalNutrition = Math.max(0.1, Math.min(1.2, hh.maternalNutrition + scenario.interventions.maternalNutrition * 0.004 + (hh.foodStock > 8 ? 0.003 : -0.005) - (hh.pregnantWomen > 0 ? 0.002 : 0)));
+          const atRisk = hh.entitlement < 1 || hh.childNutrition < 0.55 || hh.maternalNutrition < 0.55;
+          if (atRisk) totalHouseholdsAtRisk++;
+          villageChildNutrition += hh.childNutrition * Math.max(hh.under5, 1);
+          villageMaternalNutrition += hh.maternalNutrition * Math.max(hh.pregnantWomen + 1, 1);
+          if (rng() < weeklyConceptionHazard(22 * 52 + rng() * 18 * 52, pack.fertilityPeak) * (0.7 + hh.maternalNutrition * 0.4)) hh.pregnantWomen = Math.min(2, hh.pregnantWomen + 1);
+          if (rng() < 0.0025 + hh.pregnantWomen * 0.002) { const births = hh.pregnantWomen > 0 ? 1 : 0; hh.size += births; hh.children += births; hh.under5 += births; totalPop += births; if (hh.pregnantWomen > 0) hh.pregnantWomen -= 1; }
+          if (rng() < (pack.infantMortality + u5Burden * 0.0008) * Math.max(0.5, 1.2 - hh.childNutrition)) { if (hh.under5 > 0) { hh.under5 -= 1; hh.children = Math.max(0, hh.children - 1); hh.size = Math.max(1, hh.size - 1); totalPop = Math.max(0, totalPop - 1); } }
+          if (rng() < 0.00028 * (1 + Math.max(0, hh.debt - 5) * 0.06)) { hh.size = Math.max(1, hh.size - 1); totalPop = Math.max(0, totalPop - 1); }
+          if (rng() < 0.00035 * (scenario.remoteness + 0.2) * (1 - scenario.interventions.migrationSupport * 0.35)) { hh.adults = Math.max(1, hh.adults - 1); hh.laborUnits = Math.max(0.5, hh.laborUnits - 0.6); hh.assets += 0.2; }
+          if (rng() < 0.00030 * hh.adults * 0.08) { hh.adults += 1; hh.size += 1; hh.laborUnits += 0.8; }
+        }
+
+        const avgChildNutrition = villageChildNutrition / Math.max(village.households.reduce((s,h)=>s+Math.max(h.under5,1),0), 1);
+        const avgMaternalNutrition = villageMaternalNutrition / Math.max(village.households.reduce((s,h)=>s+Math.max(h.pregnantWomen+1,1),0), 1);
+        const hhRiskFrac = totalHouseholdsAtRisk / village.households.length;
+        u5Burden = Math.max(0.05, Math.min(0.95, u5Burden + (0.60 - avgChildNutrition) * 0.015 + hhRiskFrac * 0.005 - scenario.interventions.schoolMeals * 0.004));
+        maternalBurden = Math.max(0.05, Math.min(0.90, maternalBurden + (0.62 - avgMaternalNutrition) * 0.012 + hhRiskFrac * 0.004 - scenario.interventions.maternalNutrition * 0.005));
+        entitlementStress = Math.max(0.05, Math.min(0.95, entitlementStress + hhRiskFrac * 0.008 + (village.market.grainPrice - 1) * 0.010 - scenario.interventions.cashTransfers * 0.003));
+        foodBuffer = Math.max(0.05, Math.min(1.25, foodBuffer + scenario.interventions.bufferStock * 0.004 + scenario.interventions.irrigationRepair * 0.002 - hhRiskFrac * 0.006 - (village.market.grainPrice - 1) * 0.004));
+        risk = Math.max(1, Math.min(99, 20 + scenario.remoteness * 17 + (1 - foodBuffer) * 25 + u5Burden * 22 + maternalBurden * 14 + entitlementStress * 18 + (village.market.grainPrice - 1) * 16 - scenario.interventions.bufferStock * 8 - scenario.interventions.riskTargeting * 4 - scenario.interventions.irrigationRepair * 6 - scenario.interventions.schoolMeals * 5));
+
+        if ((week + 1) % 52 === 0) {
+          const year = yearIndex + 1;
+          const pyramidShift = 0.006 * year;
+          const pyramid = buildPopulationPyramid(totalPop);
+          pyramid.binsMale = pyramid.binsMale.map((v, i) => Math.max(0, Math.round(v * (1 - pyramidShift * Math.min(i, 8) / 10 + pyramidShift * Math.max(i - 10, 0) / 16))));
+          pyramid.binsFemale = pyramid.binsFemale.map((v, i) => Math.max(0, Math.round(v * (1 - pyramidShift * Math.min(i, 8) / 10 + pyramidShift * Math.max(i - 10, 0) / 16))));
+          yearly.push({ year, population: Math.round(totalPop), risk: Number(risk.toFixed(1)), u5Burden: Number((u5Burden * 100).toFixed(1)), foodBuffer: Number((foodBuffer * 100).toFixed(1)), maternalBurden: Number((maternalBurden * 100).toFixed(1)), entitlementStress: Number((entitlementStress * 100).toFixed(1)), grainPrice: Number(village.market.grainPrice.toFixed(2)), shockNote, atRiskHouseholds: Math.round(hhRiskFrac * 100), binsMale: pyramid.binsMale, binsFemale: pyramid.binsFemale });
+          shockNote = "stable";
+        }
+      }
+      return yearly;
+    }
+
+    function aggregateRuns(runs, years) {
+      const summary = [];
+      for (let i = 0; i < years; i++) {
+        const rows = runs.map(r => r[i]);
+        const metric = key => rows.map(x => x[key]).sort((a,b)=>a-b);
+        const pick = (arr, p) => arr[Math.max(0, Math.min(arr.length - 1, Math.floor(p * (arr.length - 1))))];
+        summary.push({ year: i + 1, population: mean(metric("population")), risk: mean(metric("risk")), riskLo: pick(metric("risk"), 0.1), riskHi: pick(metric("risk"), 0.9), u5Burden: mean(metric("u5Burden")), foodBuffer: mean(metric("foodBuffer")), maternalBurden: mean(metric("maternalBurden")), entitlementStress: mean(metric("entitlementStress")), shockNote: mode(rows.map(x => x.shockNote)), binsMale: rows[0].binsMale, binsFemale: rows[0].binsFemale });
+      }
+      return summary;
+    }
+
+    function rankDrivers(summary, scenario) {
+      const last = summary[summary.length - 1];
+      const items = [
+        { name: "Food buffer weakness", score: Math.max(0, 100 - last.foodBuffer), why: "Low reserve months and unstable replenishment raise shock sensitivity." },
+        { name: "Under-5 nutrition burden", score: last.u5Burden, why: "Child malnutrition is an early signal of care and food stress." },
+        { name: "Entitlement stress", score: last.entitlementStress, why: "Households cannot reliably convert labor, assets, or transfers into food." },
+        { name: "Remoteness and market friction", score: scenario.remoteness * 100, why: "Distance amplifies price shocks and delays protective action." },
+        { name: "Monsoon exposure", score: scenario.monsoonFailure * 100, why: "Repeated monsoon shortfalls weaken farm output and fodder systems." },
+      ];
+      return items.sort((a,b)=>b.score-a.score).slice(0,5);
+    }
+
+    function recommendInterventions(drivers, scenario, summary) {
+      const last = summary[summary.length - 1];
+      return [
+        { name: "Expand buffer stock before lean period", effect: "High", reason: "Food buffer is a top driver and officer has strong stock-building capacity." },
+        { name: "Target maternal and under-5 support", effect: last.u5Burden > 25 ? "High" : "Moderate", reason: "Mothering effects are central in this model; child risk falls when maternal nutrition and care improve." },
+        { name: "Repair irrigation and add tubewell coverage", effect: scenario.monsoonFailure > 0.15 ? "High" : "Moderate", reason: "Water reliability reduces long-run dependence on monsoon timing." },
+        { name: "Identify highest-risk households weekly", effect: "High", reason: "Early household detection improves entitlement rescue before visible famine." },
+        { name: "Support migration without breaking care chains", effect: scenario.remoteness > 0.6 ? "Moderate" : "Low", reason: "Migration can stabilize income, but childcare and maternal burden must be protected." },
+        { name: "Deploy solar and fertilizer substitutes", effect: "Moderate", reason: "These damp price spikes and protect farm productivity in repeated shocks." },
+        { name: "Strengthen school meals and community feeding", effect: last.u5Burden > 18 ? "High" : "Moderate", reason: "School and village feeding directly lower child nutrition risk and stabilize households." },
+      ];
+    }
+
+    function buildMemo(scenario, summary, drivers, recs) {
+      const last = summary[summary.length - 1];
+      const early = summary[Math.min(2, summary.length - 1)];
+      const riskLevel = last.risk >= 65 ? "high" : last.risk >= 40 ? "moderate" : "low";
+      return [
+        `Planning memo for ${scenario.state} village scenario`,
+        ``,
+        `Overall assessment: ${riskLevel.toUpperCase()} future famine and malnutrition risk over ${scenario.years} year(s).`,
+        `Current model projection places end-horizon risk at ${last.risk.toFixed(1)} with an 80% band of roughly ${last.riskLo.toFixed(1)} to ${last.riskHi.toFixed(1)}.`,
+        `Early horizon warning: by year ${early.year}, under-5 burden is projected around ${early.u5Burden.toFixed(1)} and food buffer around ${early.foodBuffer.toFixed(1)}.`,
+        ``,
+        `Top drivers:`,
+        ...drivers.map((d, i) => `${i + 1}. ${d.name}: ${d.why}`),
+        ``,
+        `Priority actions:`,
+        ...recs.slice(0,5).map((r, i) => `${i + 1}. ${r.name} — ${r.reason}`),
+        ``,
+        `Officer note: this scenario assumes strong administrative capacity, generous resources, and the ability to act early. The main planning task is timing, targeting, and sequencing.` + (scenario.notes ? ` Notes: ${scenario.notes}` : ``),
+      ].join("\n");
+    }
+
+    function runSimulation() {
+      ui.runBtn.disabled = true;
+      ui.runBtn.textContent = "Running...";
+      const scenario = readScenario();
+      setTimeout(() => {
+        const runs = [];
+        for (let i = 0; i < scenario.mcRuns; i++) runs.push(simulateOneRun(scenario, i));
+        const summary = aggregateRuns(runs, scenario.years);
+        const drivers = rankDrivers(summary, scenario);
+        const recs = recommendInterventions(drivers, scenario, summary);
+        const memo = buildMemo(scenario, summary, drivers, recs);
+        latestResult = { scenario, runs, summary, drivers, recs, memo };
+        renderAll();
+        ui.runBtn.disabled = false;
+        ui.runBtn.textContent = "Run simulation";
+      }, 20);
+    }
+
+    function renderAll() {
+      if (!latestResult) return;
+      const { summary, drivers, recs, memo } = latestResult;
+      const last = summary[summary.length - 1];
+      ui.riskScore.textContent = last.risk.toFixed(0);
+      ui.statusLabel.textContent = last.risk >= 65 ? "Alert" : last.risk >= 40 ? "Watch" : "Stable";
+      ui.u5Label.textContent = last.u5Burden.toFixed(0) + "%";
+      ui.foodLabel.textContent = last.foodBuffer.toFixed(0) + "%";
+      const hit = summary.findIndex(x => x.risk > 50);
+      ui.priorityHorizon.textContent = `Y${hit >= 0 ? hit + 1 : summary.length}`;
+      ui.riskFill.style.width = Math.min(100, Math.max(0, last.risk)) + "%";
+      ui.riskNarrative.textContent = `End-horizon risk is ${last.risk.toFixed(1)} with risk band ${last.riskLo.toFixed(1)}-${last.riskHi.toFixed(1)}. Shock pattern most often summarized as ${last.shockNote}.`;
+      ui.memoBox.textContent = memo;
+      ui.driversTable.innerHTML = drivers.map(d => `<tr><td>${d.name}</td><td>${d.score.toFixed(1)}</td><td>${d.why}</td></tr>`).join("");
+      ui.interventionsTable.innerHTML = recs.map(r => `<tr><td>${r.name}</td><td>${r.effect}</td><td>${r.reason}</td></tr>`).join("");
+      ui.summaryTable.innerHTML = summary.map(r => `<tr><td>${r.year}</td><td>${Math.round(r.population)}</td><td>${r.risk.toFixed(1)} (${r.riskLo.toFixed(1)}-${r.riskHi.toFixed(1)})</td><td>${r.u5Burden.toFixed(1)}%</td><td>${r.foodBuffer.toFixed(1)}%</td><td>${r.maternalBurden.toFixed(1)}%</td><td>${r.entitlementStress.toFixed(1)}%</td><td>${r.shockNote}</td></tr>`).join("");
+      drawTrendChart(summary);
+      ui.yearSlider.max = String(summary.length - 1);
+      ui.yearSlider.value = "0";
+      drawPyramid(0);
+      ui.yearLabel.textContent = "Year 1";
+      ui.playbackMeta.textContent = `Playback has ${summary.length} yearly frames built from weekly internal simulation.`;
+    }
+
+    function drawTrendChart(summary) {
+      const c = ui.trendCanvas, ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, c.width, c.height);
+      const pad = { l: 52, r: 16, t: 16, b: 34 }, w = c.width - pad.l - pad.r, h = c.height - pad.t - pad.b;
+      const years = summary.map(x => x.year), maxPop = Math.max(...summary.map(x => x.population));
+      const sx = i => pad.l + (i / Math.max(summary.length - 1, 1)) * w;
+      const sy = (v, max) => pad.t + h - (v / max) * h;
+      ctx.strokeStyle = "#233046";
+      for (let i = 0; i <= 5; i++) { const y = pad.t + (i / 5) * h; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(c.width - pad.r, y); ctx.stroke(); }
+      ctx.fillStyle = "#94a3b8"; ctx.font = "12px Arial"; years.forEach((yr, i) => ctx.fillText(String(yr), sx(i) - 4, c.height - 10));
+      drawSeries(ctx, summary.map(x => x.population), sx, v => sy(v, maxPop), "#60a5fa", true);
+      drawSeries(ctx, summary.map(x => x.risk), sx, v => sy(v, 100), "#ef4444", false);
+      drawSeries(ctx, summary.map(x => x.u5Burden), sx, v => sy(v, 100), "#f59e0b", false);
+      drawSeries(ctx, summary.map(x => x.foodBuffer), sx, v => sy(v, 100), "#22c55e", false);
+      ctx.strokeStyle = "rgba(239,68,68,0.22)"; ctx.lineWidth = 8; ctx.beginPath(); summary.forEach((row, i) => { const x = sx(i), y = sy((row.riskLo + row.riskHi) / 2, 100); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke();
+    }
+
+    function drawSeries(ctx, arr, sx, sy, color, annotate) {
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+      arr.forEach((v, i) => { const x = sx(i), y = sy(v); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+      ctx.stroke(); const lx = sx(arr.length - 1), ly = sy(arr[arr.length - 1]); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(lx, ly, 3.5, 0, Math.PI * 2); ctx.fill();
+      if (annotate) { ctx.font = "12px Arial"; ctx.fillText(String(Math.round(arr[arr.length - 1])), lx + 8, ly - 8); }
+    }
+
+    function drawPyramid(idx) {
+      if (!latestResult) return;
+      const row = latestResult.summary[idx], c = ui.pyramidCanvas, ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, c.width, c.height);
+      const mid = c.width / 2, labelW = 34, barH = 14, maxVal = Math.max(...row.binsMale, ...row.binsFemale, 1);
+      ctx.fillStyle = "#94a3b8"; ctx.font = "11px Arial";
+      ageBins.forEach((bin, i) => {
+        const y = 10 + i * 17, mw = (row.binsMale[i] / maxVal) * (mid - 60), fw = (row.binsFemale[i] / maxVal) * (mid - 60);
+        ctx.fillStyle = "rgba(96,165,250,0.85)"; ctx.fillRect(mid - labelW - mw, y, mw, barH);
+        ctx.fillStyle = "rgba(167,139,250,0.80)"; ctx.fillRect(mid + labelW, y, fw, barH);
+        ctx.fillStyle = "#94a3b8"; if (i % 2 === 0) ctx.fillText(bin, mid - 13, y + 11);
+      });
+      ctx.strokeStyle = "#334155"; ctx.beginPath(); ctx.moveTo(mid, 0); ctx.lineTo(mid, c.height); ctx.stroke();
+      ctx.fillStyle = "#cbd5e1"; ctx.fillText("Male", mid - 120, c.height - 10); ctx.fillText("Female", mid + 80, c.height - 10);
+      ui.yearLabel.textContent = `Year ${row.year}`;
+    }
+
+    function onYearChange() { drawPyramid(Number(ui.yearSlider.value)); }
+
+    function togglePlayback() {
+      if (!latestResult) return;
+      if (playbackTimer) { clearInterval(playbackTimer); playbackTimer = null; ui.playBtn.textContent = "Play"; return; }
+      ui.playBtn.textContent = "Pause";
+      playbackTimer = setInterval(() => {
+        const max = Number(ui.yearSlider.max);
+        let v = Number(ui.yearSlider.value);
+        v = v >= max ? 0 : v + 1;
+        ui.yearSlider.value = String(v);
+        drawPyramid(v);
+      }, 850);
+    }
+
+    function exportMemo() {
+      const text = latestResult ? latestResult.memo : "Run the simulation first.";
+      navigator.clipboard.writeText(text).then(() => ui.riskNarrative.textContent = "Planning memo copied to clipboard.").catch(() => ui.riskNarrative.textContent = "Clipboard copy failed. You can still copy the memo manually.");
+    }
+
+    initUI();
+  </script>
+</body>
+</html>
